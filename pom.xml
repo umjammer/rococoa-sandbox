@@ -1,130 +1,176 @@
-<?xml version="1.0" encoding="UTF-8"?><project>
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
+
   <groupId>vavi</groupId>
-  <artifactId>ggps</artifactId>
-  <version>0.0.1</version>
+  <artifactId>vavi-apps-ggps</artifactId>
+  <version>0.0.1-SNAPSHOT</version>
+
+  <properties>
+    <rococoa.version>0.8.5-SNAPSHOT</rococoa.version>
+  </properties>
+
   <build>
-    <sourceDirectory>src/main/java</sourceDirectory>
-    <testSourceDirectory>src/test/java</testSourceDirectory>
     <plugins>
       <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
+        <version>3.10.1</version>
         <configuration>
-          <source>1.6</source>
-          <target>1.6</target>
-          <compilerVersion>6</compilerVersion>
+          <source>1.8</source>
+          <target>1.8</target>
+          <encoding>UTF-8</encoding>
+        </configuration>
+      </plugin>
+
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>native-maven-plugin</artifactId>
+        <version>1.0-alpha-11</version>
+        <extensions>true</extensions>
+        <configuration>
+          <javahOS>darwin</javahOS>
+          <compilerProvider>generic-classic</compilerProvider>
+          <compilerStartOptions>
+            <compilerStartOption>-g -Wall -O2 -fomit-frame-pointer -fPIC</compilerStartOption>
+            <!-- unless locating jdk includes, cause error why??? -->
+            <compilerStartOption>-arch x86_64
+              -I${java.home}/../include
+              -I${java.home}/../include/darwin
+              -I.
+            </compilerStartOption>
+          </compilerStartOptions>
+          <sources>
+            <source>
+              <directory>src/test/native</directory>
+              <fileNames>
+                <fileName>test.m</fileName>
+              </fileNames>
+            </source>
+          </sources>
+          <linkerStartOptions>
+            <linkerStartOption>-arch x86_64
+              -lobjc -framework Foundation -framework JavaNativeFoundation
+              -ljvm -L${java.home}/../jre/lib/server
+            </linkerStartOption>
+          </linkerStartOptions>
+          <linkerFinalName/>
+          <linkerEndOptions>
+            <linkerEndOption>-o ${project.build.directory}/jvmtest</linkerEndOption>
+          </linkerEndOptions>
+        </configuration>
+        <executions>
+          <execution>
+            <id>compile-pvorbis</id>
+            <phase>compile</phase>
+            <goals>
+              <goal>compile</goal>
+              <goal>link</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-dependency-plugin</artifactId>
+        <version>3.3.0</version>
+        <executions>
+          <execution>
+            <id>copy</id>
+            <phase>generate-resources</phase>
+            <goals>
+              <goal>copy</goal>
+            </goals>
+            <configuration>
+              <artifactItems>
+                <artifactItem>
+                  <groupId>org.rococoa</groupId>
+                  <artifactId>rococoa-core</artifactId>
+                  <type>dylib</type>
+                  <overWrite>false</overWrite>
+                  <outputDirectory>${project.build.testOutputDirectory}</outputDirectory>
+                  <destFileName>librococoa.dylib</destFileName>
+                </artifactItem>
+              </artifactItems>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <version>3.0.0-M7</version>
+        <configuration>
+          <argLine>
+            -javaagent:${project.build.directory}/gi.jar
+            -Djava.util.logging.config.file=${project.build.testOutputDirectory}/logging.properties
+          </argLine>
+          <forkMode>always</forkMode>
+          <trimStackTrace>false</trimStackTrace>
         </configuration>
       </plugin>
     </plugins>
   </build>
+
+  <repositories>
+    <repository>
+      <id>jitpack.io</id>
+      <url>https://jitpack.io</url>
+    </repository>
+    <repository>
+      <id>github</id>
+      <url>https://maven.pkg.github.com/umjammer/*</url>
+    </repository>
+  </repositories>
+
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>org.junit</groupId>
+        <artifactId>junit-bom</artifactId>
+        <version>5.9.1</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+
   <dependencies>
     <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-      <version>3.8.1</version>
+      <groupId>com.github.umjammer</groupId>
+      <artifactId>vavi-commons</artifactId>
+      <version>1.1.8</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.rococoa</groupId>
+      <artifactId>rococoa-contrib</artifactId>
+      <version>${rococoa.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.rococoa</groupId>
+      <artifactId>rococoa-core</artifactId>
+      <version>${rococoa.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter-api</artifactId>
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>commons-logging</groupId>
-      <artifactId>commons-logging</artifactId>
-      <version>1.1.1</version>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter-engine</artifactId>
+      <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>log4j</groupId>
-      <artifactId>log4j</artifactId>
-      <version>1.2.9</version>
-      <optional>false</optional>
-    </dependency>
-    <dependency>
-        <groupId>org.springframework</groupId>
-        <artifactId>spring</artifactId>
-        <version>2.0.7</version>
-        <optional>false</optional>
-    </dependency>
-    <dependency>
-        <groupId>javax.persistence</groupId>
-        <artifactId>persistence-api</artifactId>
-        <version>1.0</version>
-        <optional>false</optional>
-    </dependency>
-    <dependency>
-        <groupId>org.apache.myfaces.core</groupId>
-        <artifactId>myfaces-api</artifactId>
-        <version>1.1.8</version>
-        <optional>false</optional>
-    </dependency>
-    <dependency>
-        <groupId>org.apache.myfaces.core</groupId>
-        <artifactId>myfaces-impl</artifactId>
-        <version>1.1.4</version>
-        <optional>false</optional>
-    </dependency>
-    <dependency>
-        <groupId>org.aspectj</groupId>
-        <artifactId>aspectjrt</artifactId>
-        <version>1.6.0</version>
-        <optional>false</optional>
-    </dependency>
-    <dependency>
-        <groupId>org.aspectj</groupId>
-        <artifactId>aspectjweaver</artifactId>
-        <version>1.6.0</version>
-        <optional>false</optional>
-    </dependency>
-    <dependency>
-        <groupId>org.hibernate</groupId>
-        <artifactId>hibernate</artifactId>
-        <version>3.2.6.ga</version>
-        <optional>false</optional>
-    </dependency>
-    <dependency>
-        <groupId>org.hibernate</groupId>
-        <artifactId>hibernate-entitymanager</artifactId>
-        <version>3.3.2.GA</version>
-        <optional>false</optional>
-    </dependency>
-    <dependency>
-        <groupId>c3p0</groupId>
-        <artifactId>c3p0</artifactId>
-        <version>0.9.1.2</version>
-        <optional>false</optional>
-    </dependency>
-    <dependency>
-        <groupId>opensymphony</groupId>
-        <artifactId>oscache</artifactId>
-        <version>2.4.1</version>
-        <optional>false</optional>
-    </dependency>
-    <dependency>
-        <groupId>mysql</groupId>
-        <artifactId>mysql-connector-java</artifactId>
-        <version>8.0.28</version>
-        <optional>false</optional>
-    </dependency>
-    <dependency>
-        <groupId>javax.servlet</groupId>
-        <artifactId>servlet-api</artifactId>
-        <version>2.4</version>
-        <scope>provided</scope>
-        <optional>false</optional>
-    </dependency>
-    <dependency>
-        <groupId>commons-dbutils</groupId>
-        <artifactId>commons-dbutils</artifactId>
-        <version>1.1-dev</version>
-        <optional>false</optional>
-    </dependency>
-    <dependency>
-    	<groupId>org.codehaus.xfire</groupId>
-    	<artifactId>xfire-all</artifactId>
-    	<version>1.2.4</version>
-    	<optional>false</optional>
-    </dependency>
-    <dependency>
-    	<groupId>vavi</groupId>
-    	<artifactId>vavi-persistence</artifactId>
-    	<version>1.0.0</version>
-    	<optional>false</optional>
+      <groupId>org.junit.platform</groupId>
+      <artifactId>junit-platform-commons</artifactId>
+      <scope>test</scope>
     </dependency>
   </dependencies>
 </project>
