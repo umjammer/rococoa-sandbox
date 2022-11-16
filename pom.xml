@@ -5,11 +5,11 @@
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>vavi</groupId>
-  <artifactId>vavi-apps-ggps</artifactId>
+  <artifactId>rococoa-sandbox</artifactId>
   <version>0.0.1-SNAPSHOT</version>
 
   <properties>
-    <rococoa.version>0.8.5-SNAPSHOT</rococoa.version>
+    <rococoa.version>0.8.5</rococoa.version>
   </properties>
 
   <build>
@@ -106,7 +106,6 @@
         <version>3.0.0-M7</version>
         <configuration>
           <argLine>
-            -javaagent:${project.build.directory}/gi.jar
             -Djava.util.logging.config.file=${project.build.testOutputDirectory}/logging.properties
           </argLine>
           <forkMode>always</forkMode>
