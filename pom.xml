@@ -106,7 +106,6 @@
         <version>3.0.0-M7</version>
         <configuration>
           <argLine>
-            -javaagent:${project.build.directory}/gi.jar
             -Djava.util.logging.config.file=${project.build.testOutputDirectory}/logging.properties
           </argLine>
           <forkMode>always</forkMode>
